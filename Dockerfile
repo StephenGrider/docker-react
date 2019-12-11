@@ -3,7 +3,7 @@ FROM node:alpine as builder
 RUN mkdir /app
 COPY package*.json ./
 RUN npm install
-COPY . .
+COPi . .
 RUN npm run build
 
 FROM nginx
