@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/af94a2667ac44150995874d6ac12b969)](https://www.codacy.com/manual/m-a-n-i-s-h/docker-react?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=m-a-n-i-s-h/docker-react&amp;utm_campaign=Badge_Grade)
+
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>
