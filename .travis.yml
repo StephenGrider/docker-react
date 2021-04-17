@@ -6,4 +6,4 @@ before_install:
   - docker build -t scottbeaman/docker-react -f Dockerfile.dev .
 
 script:
-  - docker run scottbeaman/docker-react npm run test -- --coverge
+  - docker run scottbeaman/docker-react npm run test -- --coverage
