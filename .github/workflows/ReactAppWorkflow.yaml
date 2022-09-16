@@ -1,0 +1,58 @@
+name: ReactAppWorkflow
+"on":
+    push:
+        branches:
+            - master
+    workflow_dispatch: {}
+env:
+    ACR_RESOURCE_GROUP: AKSrg
+    AZURE_CONTAINER_REGISTRY: AKSregistar
+    CLUSTER_NAME: AKSclusterCICD
+    CLUSTER_RESOURCE_GROUP: AKSrg
+    CONTAINER_NAME: mypdfsample
+    DEPLOYMENT_MANIFEST_PATH: |
+        ./docker-compose.yml
+jobs:
+    buildImage:
+        permissions:
+            contents: read
+            id-token: write
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: azure/login@v1.4.3
+              name: Azure login
+              with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            - name: Build and push image to ACR
+              run: az acr build --image ${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ./Dockerfile ./
+    deploy:
+        permissions:
+            actions: read
+            contents: read
+            id-token: write
+        runs-on: ubuntu-latest
+        needs:
+            - buildImage
+        steps:
+            - uses: actions/checkout@v3
+            - uses: azure/login@v1.4.3
+              name: Azure login
+              with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            - uses: azure/aks-set-context@v3
+              name: Get K8s context
+              with:
+                cluster-name: ${{ env.CLUSTER_NAME }}
+                resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+            - uses: Azure/k8s-deploy@v4
+              name: Deploys application
+              with:
+                action: deploy
+                images: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+                manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}
+                namespace: namespace-workflow-1663333883688
